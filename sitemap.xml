@@ -1,25 +1,25 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
-    <loc>https://breeze141all.github.io/ct-client/</loc>
+    <loc>https://breeze141all.github.io/hawk-site/</loc>
     <lastmod>2026-09-18</lastmod>
     <changefreq>weekly</changefreq>
     <priority>1.0</priority>
   </url>
   <url>
-    <loc>https://breeze141all.github.io/ct-client/privacy.html</loc>
+    <loc>https://breeze141all.github.io/hawk-site/privacy.html</loc>
     <lastmod>2026-09-18</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.5</priority>
   </url>
   <url>
-    <loc>https://breeze141all.github.io/ct-client/terms.html</loc>
+    <loc>https://breeze141all.github.io/hawk-site/terms.html</loc>
     <lastmod>2026-09-18</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.5</priority>
   </url>
   <url>
-    <loc>https://breeze141all.github.io/ct-client/404.html</loc>
+    <loc>https://breeze141all.github.io/hawk-site/404.html</loc>
     <lastmod>2026-09-18</lastmod>
     <changefreq>yearly</changefreq>
     <priority>0.1</priority>
