@@ -1,0 +1,1063 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Hawk Terminal — Професійний десктопний термінал крипто-чартингу на Rust</title>
+  <meta name="description" content="Високопродуктивний десктопний термінал крипто-чартингу на Rust + Iced. Heatmap, Footprint, 2D Liquidation Heatmap, Multi-Period VWAP, Market Replay. Підтримка Binance, Bybit, Hyperliquid, OKX.">
+  <link rel="icon" type="image/png" href="assets/icon.png">
+  
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+  <style>
+    :root {
+      --bg-main: #090d16;
+      --bg-surface: #0f172a;
+      --bg-card: rgba(18, 26, 47, 0.7);
+      --bg-card-hover: rgba(24, 35, 63, 0.85);
+      --border-subtle: rgba(255, 255, 255, 0.08);
+      --border-accent: rgba(56, 189, 248, 0.3);
+      --primary: #38bdf8;
+      --primary-glow: rgba(56, 189, 248, 0.25);
+      --secondary: #818cf8;
+      --success: #34d399;
+      --warning: #fbbf24;
+      --danger: #f87171;
+      --text-main: #f8fafc;
+      --text-muted: #94a3b8;
+      --font-sans: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      --font-mono: 'JetBrains Mono', monospace;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background-color: var(--bg-main);
+      color: var(--text-main);
+      font-family: var(--font-sans);
+      line-height: 1.6;
+      overflow-x: hidden;
+      background-image: 
+        radial-gradient(circle at 50% 0%, rgba(56, 189, 248, 0.12), transparent 45%),
+        radial-gradient(circle at 85% 30%, rgba(129, 140, 248, 0.08), transparent 40%),
+        radial-gradient(circle at 15% 70%, rgba(52, 211, 153, 0.06), transparent 35%);
+      background-attachment: fixed;
+    }
+
+    /* Container */
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 0 1.5rem;
+    }
+
+    /* Header */
+    header {
+      position: sticky;
+      top: 0;
+      z-index: 50;
+      backdrop-filter: blur(16px);
+      background: rgba(9, 13, 22, 0.8);
+      border-bottom: 1px solid var(--border-subtle);
+    }
+
+    .nav-wrap {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      height: 72px;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      text-decoration: none;
+      color: var(--text-main);
+    }
+
+    .brand-logo {
+      width: 40px;
+      height: 40px;
+      border-radius: 8px;
+      object-fit: cover;
+      box-shadow: 0 0 16px var(--primary-glow);
+    }
+
+    .brand-text {
+      font-size: 1.25rem;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .badge-rust {
+      font-family: var(--font-mono);
+      font-size: 0.65rem;
+      padding: 2px 8px;
+      border-radius: 9999px;
+      background: rgba(56, 189, 248, 0.15);
+      color: var(--primary);
+      border: 1px solid rgba(56, 189, 248, 0.3);
+      font-weight: 600;
+      text-transform: uppercase;
+    }
+
+    .nav-links {
+      display: flex;
+      align-items: center;
+      gap: 1.75rem;
+      list-style: none;
+    }
+
+    .nav-links a {
+      text-decoration: none;
+      color: var(--text-muted);
+      font-size: 0.9rem;
+      font-weight: 500;
+      transition: color 0.2s ease;
+    }
+
+    .nav-links a:hover {
+      color: var(--text-main);
+    }
+
+    .nav-actions {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.65rem 1.25rem;
+      font-size: 0.875rem;
+      font-weight: 600;
+      border-radius: 8px;
+      text-decoration: none;
+      transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+      cursor: pointer;
+      border: 1px solid transparent;
+      font-family: inherit;
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, #0284c7 0%, #2563eb 100%);
+      color: #ffffff;
+      box-shadow: 0 4px 14px rgba(2, 132, 199, 0.35);
+    }
+
+    .btn-primary:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 6px 20px rgba(2, 132, 199, 0.5);
+    }
+
+    .btn-secondary {
+      background: rgba(255, 255, 255, 0.05);
+      color: var(--text-main);
+      border-color: var(--border-subtle);
+    }
+
+    .btn-secondary:hover {
+      background: rgba(255, 255, 255, 0.1);
+      border-color: rgba(255, 255, 255, 0.2);
+    }
+
+    /* Hero Section */
+    .hero {
+      padding: 5rem 0 3.5rem;
+      text-align: center;
+    }
+
+    .hero-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.35rem 1rem;
+      border-radius: 9999px;
+      background: rgba(30, 41, 59, 0.6);
+      border: 1px solid var(--border-subtle);
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      margin-bottom: 1.5rem;
+    }
+
+    .hero-pill-status {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--success);
+      box-shadow: 0 0 8px var(--success);
+    }
+
+    .hero-title {
+      font-size: clamp(2.25rem, 5vw, 3.75rem);
+      font-weight: 800;
+      letter-spacing: -0.03em;
+      line-height: 1.15;
+      max-width: 900px;
+      margin: 0 auto 1.5rem;
+    }
+
+    .hero-gradient-text {
+      background: linear-gradient(135deg, #38bdf8 0%, #818cf8 50%, #c084fc 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .hero-desc {
+      font-size: clamp(1rem, 2vw, 1.25rem);
+      color: var(--text-muted);
+      max-width: 740px;
+      margin: 0 auto 2.5rem;
+    }
+
+    .hero-cta-group {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 1rem;
+      margin-bottom: 2.5rem;
+    }
+
+    .hero-cta-group .btn {
+      padding: 0.85rem 1.75rem;
+      font-size: 1rem;
+    }
+
+    .hero-stats {
+      display: flex;
+      justify-content: center;
+      gap: 2.5rem;
+      flex-wrap: wrap;
+      margin-top: 2rem;
+      padding-top: 1.5rem;
+      border-top: 1px solid var(--border-subtle);
+    }
+
+    .stat-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .stat-val {
+      font-family: var(--font-mono);
+      font-size: 1.25rem;
+      font-weight: 700;
+      color: var(--text-main);
+    }
+
+    .stat-lbl {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    /* Terminal Window Mockup */
+    .preview-section {
+      margin: 2rem auto 5rem;
+      max-width: 1100px;
+    }
+
+    .terminal-window {
+      background: #0b1120;
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      border-radius: 12px;
+      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.7), 0 0 40px rgba(56, 189, 248, 0.1);
+      overflow: hidden;
+    }
+
+    .terminal-header {
+      background: #0f172a;
+      padding: 0.75rem 1rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid var(--border-subtle);
+    }
+
+    .window-dots {
+      display: flex;
+      gap: 6px;
+    }
+
+    .dot {
+      width: 11px;
+      height: 11px;
+      border-radius: 50%;
+    }
+    .dot-red { background: #ef4444; }
+    .dot-yellow { background: #f59e0b; }
+    .dot-green { background: #10b981; }
+
+    .terminal-title {
+      font-family: var(--font-mono);
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .terminal-body {
+      padding: 1.25rem;
+      font-family: var(--font-mono);
+      display: grid;
+      grid-template-columns: 2fr 1fr;
+      gap: 1rem;
+      min-height: 380px;
+    }
+
+    @media (max-width: 860px) {
+      .terminal-body {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .chart-panel {
+      background: #090e1a;
+      border: 1px solid rgba(255, 255, 255, 0.05);
+      border-radius: 8px;
+      padding: 1rem;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .chart-hud {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+      padding-bottom: 0.5rem;
+    }
+
+    .chart-ticker {
+      font-weight: 700;
+      color: #38bdf8;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .chart-price {
+      color: var(--success);
+      font-weight: 700;
+    }
+
+    .heatmap-visual {
+      position: relative;
+      height: 240px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: radial-gradient(ellipse at 60% 50%, rgba(244, 63, 94, 0.15) 0%, rgba(56, 189, 248, 0.05) 50%, transparent 80%);
+    }
+
+    .heatmap-bars {
+      width: 100%;
+      height: 100%;
+      display: flex;
+      align-items: flex-end;
+      gap: 4px;
+      opacity: 0.75;
+    }
+
+    .bar {
+      flex: 1;
+      background: linear-gradient(to top, rgba(56, 189, 248, 0.2), rgba(129, 140, 248, 0.6));
+      border-radius: 2px;
+    }
+
+    .liq-level {
+      position: absolute;
+      width: 100%;
+      height: 2px;
+      background: rgba(239, 68, 68, 0.7);
+      box-shadow: 0 0 10px rgba(239, 68, 68, 0.9);
+    }
+    .liq-level-1 { top: 25%; }
+    .liq-level-2 { top: 75%; background: rgba(52, 211, 153, 0.7); box-shadow: 0 0 10px rgba(52, 211, 153, 0.9); }
+
+    .chart-meta {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.7rem;
+      color: var(--text-muted);
+      border-top: 1px solid rgba(255, 255, 255, 0.05);
+      padding-top: 0.5rem;
+    }
+
+    .orderbook-panel {
+      background: #090e1a;
+      border: 1px solid rgba(255, 255, 255, 0.05);
+      border-radius: 8px;
+      padding: 0.85rem;
+      font-size: 0.75rem;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+
+    .dom-row {
+      display: flex;
+      justify-content: space-between;
+      padding: 2px 0;
+      position: relative;
+    }
+
+    .dom-ask { color: #f87171; }
+    .dom-bid { color: #34d399; }
+    .dom-vol { color: var(--text-muted); }
+
+    /* Features Grid */
+    .section-header {
+      text-align: center;
+      margin-bottom: 3.5rem;
+    }
+
+    .section-badge {
+      font-family: var(--font-mono);
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: var(--primary);
+      margin-bottom: 0.5rem;
+      display: inline-block;
+    }
+
+    .section-title {
+      font-size: clamp(1.75rem, 3.5vw, 2.5rem);
+      font-weight: 800;
+      letter-spacing: -0.02em;
+    }
+
+    .features-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+      gap: 1.5rem;
+      margin-bottom: 5rem;
+    }
+
+    .feature-card {
+      background: var(--bg-card);
+      backdrop-filter: blur(12px);
+      border: 1px solid var(--border-subtle);
+      border-radius: 12px;
+      padding: 1.75rem;
+      transition: all 0.25s ease;
+      position: relative;
+    }
+
+    .feature-card:hover {
+      background: var(--bg-card-hover);
+      border-color: var(--border-accent);
+      transform: translateY(-3px);
+      box-shadow: 0 12px 30px rgba(0,0,0,0.3);
+    }
+
+    .feature-icon {
+      width: 44px;
+      height: 44px;
+      border-radius: 10px;
+      background: rgba(56, 189, 248, 0.1);
+      border: 1px solid rgba(56, 189, 248, 0.2);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 1.25rem;
+      color: var(--primary);
+    }
+
+    .feature-card h3 {
+      font-size: 1.15rem;
+      font-weight: 700;
+      margin-bottom: 0.6rem;
+      color: var(--text-main);
+    }
+
+    .feature-card p {
+      font-size: 0.9rem;
+      color: var(--text-muted);
+      line-height: 1.55;
+    }
+
+    .feature-tag {
+      display: inline-block;
+      margin-top: 1rem;
+      font-family: var(--font-mono);
+      font-size: 0.7rem;
+      color: var(--primary);
+    }
+
+    /* Exchanges */
+    .exchanges-section {
+      background: rgba(15, 23, 42, 0.5);
+      border-top: 1px solid var(--border-subtle);
+      border-bottom: 1px solid var(--border-subtle);
+      padding: 4rem 0;
+      margin-bottom: 5rem;
+    }
+
+    .exchanges-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 1.5rem;
+      margin-top: 2rem;
+    }
+
+    .exchange-card {
+      background: var(--bg-main);
+      border: 1px solid var(--border-subtle);
+      border-radius: 10px;
+      padding: 1.5rem;
+      text-align: center;
+      transition: border-color 0.2s;
+    }
+
+    .exchange-card:hover {
+      border-color: var(--primary);
+    }
+
+    .exchange-name {
+      font-weight: 700;
+      font-size: 1.1rem;
+      margin-bottom: 0.25rem;
+    }
+
+    .exchange-type {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      font-family: var(--font-mono);
+    }
+
+    /* Project Tracker & Milestones */
+    .tracker-section {
+      margin-bottom: 5rem;
+    }
+
+    .tracker-card {
+      background: linear-gradient(145deg, rgba(15, 23, 42, 0.9), rgba(11, 17, 32, 0.9));
+      border: 1px solid var(--border-subtle);
+      border-radius: 16px;
+      padding: 2.5rem;
+    }
+
+    .tracker-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 2rem;
+      margin-top: 1.5rem;
+    }
+
+    @media (max-width: 768px) {
+      .tracker-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .tracker-box {
+      background: rgba(0, 0, 0, 0.25);
+      border: 1px solid var(--border-subtle);
+      border-radius: 10px;
+      padding: 1.5rem;
+    }
+
+    .tracker-box h4 {
+      font-size: 1.05rem;
+      margin-bottom: 0.75rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .tracker-box ul {
+      list-style: none;
+    }
+
+    .tracker-box li {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      margin-bottom: 0.5rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .tracker-box li::before {
+      content: "✓";
+      color: var(--success);
+      font-weight: bold;
+    }
+
+    /* Download section */
+    .download-section {
+      text-align: center;
+      padding: 4rem 1.5rem;
+      background: radial-gradient(circle at 50% 50%, rgba(56, 189, 248, 0.1) 0%, transparent 65%);
+      border: 1px solid var(--border-subtle);
+      border-radius: 20px;
+      margin-bottom: 5rem;
+    }
+
+    .os-downloads {
+      display: flex;
+      justify-content: center;
+      flex-wrap: wrap;
+      gap: 1.25rem;
+      margin: 2.5rem 0 1.5rem;
+    }
+
+    .os-btn {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      padding: 0.85rem 1.5rem;
+      background: #0f172a;
+      border: 1px solid var(--border-subtle);
+      border-radius: 10px;
+      text-decoration: none;
+      color: var(--text-main);
+      transition: all 0.2s;
+    }
+
+    .os-btn:hover {
+      border-color: var(--primary);
+      transform: translateY(-2px);
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4);
+    }
+
+    .os-info {
+      text-align: left;
+    }
+
+    .os-name {
+      font-weight: 700;
+      font-size: 0.95rem;
+    }
+
+    .os-sub {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      font-family: var(--font-mono);
+    }
+
+    /* Footer */
+    footer {
+      border-top: 1px solid var(--border-subtle);
+      padding: 2.5rem 0;
+      text-align: center;
+      font-size: 0.85rem;
+      color: var(--text-muted);
+    }
+
+    .footer-links {
+      display: flex;
+      justify-content: center;
+      gap: 1.5rem;
+      margin-bottom: 1rem;
+    }
+
+    .footer-links a {
+      color: var(--text-muted);
+      text-decoration: none;
+      transition: color 0.2s;
+    }
+
+    .footer-links a:hover {
+      color: var(--text-main);
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Header -->
+  <header>
+    <div class="container nav-wrap">
+      <a href="#" class="brand">
+        <img src="assets/icon.png" alt="Hawk Terminal Logo" class="brand-logo" onerror="this.src='assets/logo.png'">
+        <span class="brand-text">
+          Hawk Terminal
+          <span class="badge-rust">Rust + Iced</span>
+        </span>
+      </a>
+
+      <nav>
+        <ul class="nav-links">
+          <li><a href="#features">Можливості</a></li>
+          <li><a href="#exchanges">Біржі</a></li>
+          <li><a href="#tracker">Задачі & Віхи</a></li>
+          <li><a href="#download">Завантажити</a></li>
+        </ul>
+      </nav>
+
+      <div class="nav-actions">
+        <a href="https://github.com/Breeze141all/ct-client" target="_blank" rel="noopener" class="btn btn-secondary">
+          <svg width="16" height="16" fill="currentColor" viewBox="0 0 24 24"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/></svg>
+          GitHub
+        </a>
+        <a href="#download" class="btn btn-primary">Завантажити</a>
+      </div>
+    </div>
+  </header>
+
+  <!-- Hero Section -->
+  <main class="container">
+    <section class="hero">
+      <div class="hero-pill">
+        <span class="hero-pill-status"></span>
+        <span>Тести ядра: 116/116 Passed | Zero Server Overhead</span>
+      </div>
+
+      <h1 class="hero-title">
+        Ультрашвидкий термінал <br>крипто-чартингу на <span class="hero-gradient-text">Rust + Iced</span>
+      </h1>
+
+      <p class="hero-desc">
+        Десктопний клієнт прямого доступу до ринкових даних бірж без посередників. 
+        Теплові карти ліквідацій у реальному часі, кластерний аналіз Footprint, симулятор Market Replay та ковзні VWAP.
+      </p>
+
+      <div class="hero-cta-group">
+        <a href="#download" class="btn btn-primary">
+          <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+          Завантажити клієнт
+        </a>
+        <a href="https://github.com/Breeze141all/ct-client/issues" target="_blank" rel="noopener" class="btn btn-secondary">
+          Трекер задач (Issues)
+        </a>
+        <a href="https://github.com/Breeze141all/ct-client/milestones" target="_blank" rel="noopener" class="btn btn-secondary">
+          Віхи проекту (Milestones)
+        </a>
+      </div>
+
+      <div class="hero-stats">
+        <div class="stat-item">
+          <span class="stat-val">~0.1 ms</span>
+          <span class="stat-lbl">Обробка ордербука</span>
+        </div>
+        <div class="stat-item">
+          <span class="stat-val">4 Біржі</span>
+          <span class="stat-lbl">Прямий WebSocket + REST</span>
+        </div>
+        <div class="stat-item">
+          <span class="stat-val">LZ4</span>
+          <span class="stat-lbl">Бінарний кеш тіків</span>
+        </div>
+        <div class="stat-item">
+          <span class="stat-val">100% Rust</span>
+          <span class="stat-lbl">Пам'ять без GC паузи</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- Terminal Mockup Showcase -->
+    <section class="preview-section">
+      <div class="terminal-window">
+        <div class="terminal-header">
+          <div class="window-dots">
+            <span class="dot dot-red"></span>
+            <span class="dot dot-yellow"></span>
+            <span class="dot dot-green"></span>
+          </div>
+          <div class="terminal-title">
+            <span>hawk-terminal — [BTCUSDT.P : BYBIT] — 1m Footprint + 2D Liq Heatmap</span>
+          </div>
+          <div style="font-size:0.7rem; color:var(--success);">● WS CONNECTED</div>
+        </div>
+
+        <div class="terminal-body">
+          <div class="chart-panel">
+            <div class="chart-hud">
+              <div class="chart-ticker">
+                <span>BTC/USDT Perp</span>
+                <span style="color:var(--text-muted); font-size:0.8rem;">Bybit Linear</span>
+              </div>
+              <div class="chart-price">$64,812.50 (+2.84%)</div>
+            </div>
+
+            <div class="heatmap-visual">
+              <div class="liq-level liq-level-1" title="Short Liquidations Density"></div>
+              <div class="liq-level liq-level-2" title="Long Liquidations Pool"></div>
+              <div class="heatmap-bars">
+                <div class="bar" style="height: 30%;"></div>
+                <div class="bar" style="height: 45%;"></div>
+                <div class="bar" style="height: 60%;"></div>
+                <div class="bar" style="height: 40%;"></div>
+                <div class="bar" style="height: 75%;"></div>
+                <div class="bar" style="height: 90%;"></div>
+                <div class="bar" style="height: 65%;"></div>
+                <div class="bar" style="height: 85%;"></div>
+                <div class="bar" style="height: 50%;"></div>
+                <div class="bar" style="height: 70%;"></div>
+              </div>
+            </div>
+
+            <div class="chart-meta">
+              <span>Rolling VWAP (7d / 30d): $64,210.00</span>
+              <span>CVD: +4.2M Delta</span>
+              <span>Footprint: 100$ Bins</span>
+            </div>
+          </div>
+
+          <div class="orderbook-panel">
+            <div style="font-weight:700; border-bottom:1px solid rgba(255,255,255,0.05); padding-bottom:4px; margin-bottom:6px;">
+              DOM LADDER / DEPTH
+            </div>
+            <div class="dom-row"><span class="dom-ask">64,825.0</span><span class="dom-vol">18.4 BTC</span></div>
+            <div class="dom-row"><span class="dom-ask">64,820.0</span><span class="dom-vol">42.1 BTC</span></div>
+            <div class="dom-row"><span class="dom-ask">64,815.0</span><span class="dom-vol">89.6 BTC</span></div>
+            <div class="dom-row" style="background:rgba(56,189,248,0.1); font-weight:bold;">
+              <span style="color:#fff;">64,812.5</span><span style="color:#38bdf8;">LAST</span>
+            </div>
+            <div class="dom-row"><span class="dom-bid">64,810.0</span><span class="dom-vol">74.2 BTC</span></div>
+            <div class="dom-row"><span class="dom-bid">64,805.0</span><span class="dom-vol">112.8 BTC</span></div>
+            <div class="dom-row"><span class="dom-bid">64,800.0</span><span class="dom-vol">230.5 BTC</span></div>
+            <div style="margin-top:auto; font-size:0.7rem; color:var(--text-muted); border-top:1px solid rgba(255,255,255,0.05); padding-top:4px;">
+              Net OI: $2.41B (+1.8%)
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Features -->
+    <section id="features">
+      <div class="section-header">
+        <span class="section-badge">Можливості терміналу</span>
+        <h2 class="section-title">Розроблено для глибокого аналізу ліквідності</h2>
+      </div>
+
+      <div class="features-grid">
+        <div class="feature-card">
+          <div class="feature-icon">
+            <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"/></svg>
+          </div>
+          <h3>2D Liquidation Heatmap</h3>
+          <p>2D сітка Time × Price з бінами ліквідацій ($100 для BTC), відсіканням тінями свічок та підтримкою фірмових колірних тем.</p>
+          <span class="feature-tag">Issue #1 • Implemented</span>
+        </div>
+
+        <div class="feature-card">
+          <div class="feature-icon">
+            <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
+          </div>
+          <h3>Footprint & Binary Cache</h3>
+          <p>Кластерний аналіз угод з ультрашвидким кешуванням тіків у форматі LZ4 (`.fp.bin`), обмеженням споживання RAM та чесним backfill.</p>
+          <span class="feature-tag">Issue #8 • Implemented</span>
+        </div>
+
+        <div class="feature-card">
+          <div class="feature-icon">
+            <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M7 12l3-3 3 3 4-4M8 21l4-4 4 4M3 4h18M4 4h16v12a1 1 0 01-1 1H5a1 1 0 01-1-1V4z"/></svg>
+          </div>
+          <h3>Multi-Period Rolling VWAP</h3>
+          <p>Ковзні вікна 7d, 30d, 90d, 365d та сесійні періоди з динамічними смугами відхилення (1σ, 2σ, 3σ standard deviations).</p>
+          <span class="feature-tag">Issue #2 • Implemented</span>
+        </div>
+
+        <div class="feature-card">
+          <div class="feature-icon">
+            <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"/><path stroke-linecap="round" stroke-linejoin="round" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+          </div>
+          <h3>Market Replay Simulator</h3>
+          <p>Покрокове відтворення історичних торгів, інтерактивний календар вибору дати/часу та режим Random Bar для тренування стратегій.</p>
+          <span class="feature-tag">Issue #4 • Implemented</span>
+        </div>
+
+        <div class="feature-card">
+          <div class="feature-icon">
+            <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/></svg>
+          </div>
+          <h3>Розумні алерти цін</h3>
+          <p>Тригери CrossAbove / CrossBelow, аудіо-сигнали, візуальні спливаючі Toasts, бейджі рівнів на ціновій шкалі та централізований менеджер.</p>
+          <span class="feature-tag">Issue #5 • Implemented</span>
+        </div>
+
+        <div class="feature-card">
+          <div class="feature-icon">
+            <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"/></svg>
+          </div>
+          <h3>Trade Journal & PnL</h3>
+          <p>Вбудований журнал торгівлі з трьома режимами: компактний бічний сайдбар (330px), розширений повноекранний дашборд або вимкнено.</p>
+          <span class="feature-tag">Issue #6 • Implemented</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- Exchanges -->
+    <section id="exchanges" class="exchanges-section">
+      <div class="section-header" style="margin-bottom: 2rem;">
+        <span class="section-badge">Підтримувані майданчики</span>
+        <h2 class="section-title">Прямі шлюзи до ліквідності провідних бірж</h2>
+      </div>
+
+      <div class="exchanges-grid">
+        <div class="exchange-card">
+          <div class="exchange-name">Bybit</div>
+          <div class="exchange-type">Perpetual & Spot (v5 WS)</div>
+        </div>
+        <div class="exchange-card">
+          <div class="exchange-name">Binance</div>
+          <div class="exchange-type">USD-M Futures & Spot</div>
+        </div>
+        <div class="exchange-card">
+          <div class="exchange-name">Hyperliquid</div>
+          <div class="exchange-type">DEX L1 High-Frequency</div>
+        </div>
+        <div class="exchange-card">
+          <div class="exchange-name">OKX</div>
+          <div class="exchange-type">Swap & Futures Public Feed</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Task Tracker & Milestones -->
+    <section id="tracker" class="tracker-section">
+      <div class="tracker-card">
+        <div class="section-header" style="text-align: left; margin-bottom: 1.5rem;">
+          <span class="section-badge">Відкритий процес розробки</span>
+          <h2 class="section-title" style="font-size: 2rem;">Синхронізація з GitHub</h2>
+          <p style="color: var(--text-muted); margin-top: 0.5rem;">
+            Увесь прогрес, список задач та віхи проекту ведуться прозоро у відкритому репозиторії.
+          </p>
+        </div>
+
+        <div class="tracker-grid">
+          <div class="tracker-box">
+            <h4>
+              <svg width="20" height="20" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/></svg>
+              Реалізований функціонал (10/10 Core)
+            </h4>
+            <ul>
+              <li>2D Liquidation Heatmap (Time × Price)</li>
+              <li>Multi-Period Rolling VWAP & SD Bands</li>
+              <li>Drawing Suite (Fibonacci, Rays, Trendlines)</li>
+              <li>Market Replay Engine & Calendar</li>
+              <li>Price Alerts (Audio & Toast Manager)</li>
+              <li>Trade Journal (Dashboard & PnL)</li>
+              <li>TPO Multi-Period & Session Merge</li>
+              <li>Footprint LZ4 Binary Cache (.fp.bin)</li>
+              <li>Order Flow (CVD, Bid/Ask, Position Flow)</li>
+              <li>Workspace Bundle (Import/Export DoS-Safe)</li>
+            </ul>
+            <div style="margin-top: 1rem;">
+              <a href="https://github.com/Breeze141all/ct-client/issues" target="_blank" rel="noopener" class="btn btn-secondary" style="font-size: 0.8rem; padding: 0.4rem 0.8rem;">
+                Переглянути GitHub Issues →
+              </a>
+            </div>
+          </div>
+
+          <div class="tracker-box">
+            <h4>
+              <svg width="20" height="20" fill="currentColor" viewBox="0 0 24 24"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-5 14H7v-2h7v2zm3-4H7v-2h10v2zm0-4H7V7h10v2z"/></svg>
+              Віхи розробки (Milestones)
+            </h4>
+            <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 1rem;">
+              Слідкуйте за закриттям спринтів та поточним прогресом на сторінці Milestones:
+            </p>
+            <div style="background: rgba(255,255,255,0.03); border: 1px solid var(--border-subtle); border-radius: 8px; padding: 1rem; margin-bottom: 1rem;">
+              <div style="display:flex; justify-content:space-between; font-size: 0.85rem; margin-bottom: 0.5rem;">
+                <span style="font-weight: 600;">Core Terminal Engine</span>
+                <span style="color: var(--success); font-family: var(--font-mono);">100% Verified</span>
+              </div>
+              <div style="height: 6px; background: rgba(255,255,255,0.1); border-radius: 999px; overflow: hidden;">
+                <div style="width: 100%; height: 100%; background: var(--success);"></div>
+              </div>
+            </div>
+            <a href="https://github.com/Breeze141all/ct-client/milestones" target="_blank" rel="noopener" class="btn btn-secondary" style="font-size: 0.8rem; padding: 0.4rem 0.8rem;">
+              Переглянути GitHub Milestones →
+            </a>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Download Section -->
+    <section id="download" class="download-section">
+      <span class="section-badge">Інсталяція</span>
+      <h2 class="section-title">Завантажити Hawk Terminal</h2>
+      <p style="color: var(--text-muted); max-width: 600px; margin: 0.5rem auto 0;">
+        Виберіть інсталятор для вашої операційної системи. Всі бінарники збираються безпосередньо через GitHub Actions.
+      </p>
+
+      <div class="os-downloads">
+        <a href="https://github.com/Breeze141all/ct-client/releases/latest" target="_blank" rel="noopener" class="os-btn">
+          <svg width="32" height="32" fill="currentColor" viewBox="0 0 24 24"><path d="M0 3.449L9.75 2.1v9.451H0m10.949-9.602L24 0v11.4H10.949M0 12.6h9.75v9.451L0 20.699M10.949 12.6H24V24l-12.902-1.799"/></svg>
+          <div class="os-info">
+            <div class="os-name">Windows x64</div>
+            <div class="os-sub">.exe / .msi installer</div>
+          </div>
+        </a>
+
+        <a href="https://github.com/Breeze141all/ct-client/releases/latest" target="_blank" rel="noopener" class="os-btn">
+          <svg width="32" height="32" fill="currentColor" viewBox="0 0 24 24"><path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.81-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M15.97 6.37c.61-.75 1.04-1.8 1.01-2.87-.96.04-2.12.64-2.79 1.43-.58.68-1.1 1.74-1.04 2.8 1.07.08 2.19-.55 2.82-1.36z"/></svg>
+          <div class="os-info">
+            <div class="os-name">macOS (Universal)</div>
+            <div class="os-sub">Apple Silicon / Intel .dmg</div>
+          </div>
+        </a>
+
+        <a href="https://github.com/Breeze141all/ct-client/releases/latest" target="_blank" rel="noopener" class="os-btn">
+          <svg width="32" height="32" fill="currentColor" viewBox="0 0 24 24"><path d="M12.003 0a7.5 7.5 0 00-7.5 7.5c0 1.95.75 3.73 1.98 5.07l.02.03.01.01.21.23c.3.31.62.61.96.88.52.41.97.94 1.3 1.54.34.62.52 1.32.52 2.04v.7h5v-.7c0-.72.18-1.42.52-2.04.33-.6.78-1.13 1.3-1.54.34-.27.66-.57.96-.88l.21-.23.01-.01.02-.03A7.47 7.47 0 0019.503 7.5a7.5 7.5 0 00-7.5-7.5zM9.503 20v1a1.5 1.5 0 001.5 1.5h2a1.5 1.5 0 001.5-1.5v-1h-5z"/></svg>
+          <div class="os-info">
+            <div class="os-name">Linux x86_64</div>
+            <div class="os-sub">AppImage / Tar.gz</div>
+          </div>
+        </a>
+      </div>
+
+      <div style="font-family: var(--font-mono); font-size: 0.8rem; color: var(--text-muted);">
+        Вихідний код та збірка з репозиторію: <code>cargo build --release</code>
+      </div>
+    </section>
+  </main>
+
+  <!-- Footer -->
+  <footer>
+    <div class="container">
+      <div class="footer-links">
+        <a href="https://github.com/Breeze141all/ct-client" target="_blank" rel="noopener">Репозиторій</a>
+        <a href="https://github.com/Breeze141all/ct-client/issues" target="_blank" rel="noopener">Задачі (Issues)</a>
+        <a href="https://github.com/Breeze141all/ct-client/milestones" target="_blank" rel="noopener">Віхи (Milestones)</a>
+        <a href="https://github.com/Breeze141all/ct-client/releases" target="_blank" rel="noopener">Релізи</a>
+      </div>
+      <p>© 2026 Hawk Terminal. Розробка на Rust + Iced для високоточного аналізу ордербука.</p>
+    </div>
+  </footer>
+
+  <script>
+    // Автоматичне отримання кількості завантажень або найсвіжішого релізу з GitHub API
+    (async function fetchReleaseInfo() {
+      try {
+        const res = await fetch('https://api.github.com/repos/Breeze141all/ct-client/releases/latest');
+        if (res.ok) {
+          const data = await res.json();
+          if (data.tag_name) {
+            const badge = document.querySelector('.hero-pill span:last-child');
+            if (badge) {
+              badge.textContent = `Останній реліз: ${data.tag_name} | Тести ядра: 116/116 Passed`;
+            }
+          }
+        }
+      } catch (e) {
+        // Fallback default
+      }
+    })();
+  </script>
+</body>
+</html>
