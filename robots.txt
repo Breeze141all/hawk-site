@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://breeze141all.github.io/ct-client/sitemap.xml

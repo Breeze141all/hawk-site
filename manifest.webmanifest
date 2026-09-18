@@ -1,0 +1,21 @@
+{
+  "name": "Hawk Terminal",
+  "short_name": "Hawk",
+  "description": "Desktop Crypto Charting Terminal on Rust + Iced",
+  "start_url": "./",
+  "display": "standalone",
+  "background_color": "#030303",
+  "theme_color": "#ffffff",
+  "icons": [
+    {
+      "src": "assets/icon.png",
+      "sizes": "192x192 512x512",
+      "type": "image/png"
+    },
+    {
+      "src": "assets/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml"
+    }
+  ]
+}
