@@ -1,0 +1,1654 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Hawk Terminal • Sovereign Desktop Crypto Charting on Rust</title>
+  <meta name="description" content="High-frequency desktop crypto terminal on Rust + Iced. 2D Liquidation Heatmap, Footprint, Multi-Period VWAP, and Market Replay without third-party servers.">
+  
+  <link rel="canonical" href="https://breeze141all.github.io/hawk-site/">
+  <meta http-equiv="X-Content-Type-Options" content="nosniff">
+  <meta name="referrer" content="strict-origin-when-cross-origin">
+
+  <link rel="icon" type="image/svg+xml" href="assets/icon.svg">
+  <link rel="icon" type="image/x-icon" href="favicon.ico">
+  <link rel="apple-touch-icon" href="assets/apple-touch-icon.png">
+  <link rel="manifest" href="manifest.webmanifest">
+  <meta name="theme-color" content="#ffffff">
+
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://breeze141all.github.io/hawk-site/">
+  <meta property="og:title" content="Hawk Terminal • Sovereign Desktop Crypto Charting on Rust">
+  <meta property="og:description" content="High-frequency desktop crypto terminal on Rust + Iced. 2D Liquidation Heatmap, Footprint, Multi-Period VWAP, and Market Replay without third-party servers.">
+  <meta property="og:image" content="https://breeze141all.github.io/hawk-site/assets/og-image.png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:image:alt" content="Hawk Terminal Interface Preview">
+
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:url" content="https://breeze141all.github.io/hawk-site/">
+  <meta name="twitter:title" content="Hawk Terminal • Sovereign Desktop Crypto Charting on Rust">
+  <meta name="twitter:description" content="High-frequency desktop crypto terminal on Rust + Iced. 2D Liquidation Heatmap, Footprint, Multi-Period VWAP, and Market Replay without third-party servers.">
+  <meta name="twitter:image" content="https://breeze141all.github.io/hawk-site/assets/og-image.png">
+
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "SoftwareApplication",
+        "@id": "https://breeze141all.github.io/hawk-site/#software",
+        "name": "Hawk Terminal",
+        "operatingSystem": "Windows 10/11, macOS, Linux",
+        "applicationCategory": "FinanceApplication",
+        "offers": {
+          "@type": "Offer",
+          "price": "0",
+          "priceCurrency": "USD"
+        },
+        "description": "Sovereign desktop crypto charting terminal on Rust + Iced supporting Binance, Bybit, Hyperliquid, OKX."
+      },
+      {
+        "@type": "Organization",
+        "@id": "https://breeze141all.github.io/hawk-site/#organization",
+        "name": "Hawk Terminal Project",
+        "url": "https://breeze141all.github.io/hawk-site/",
+        "logo": "https://breeze141all.github.io/hawk-site/assets/icon.png"
+      },
+      {
+        "@type": "FAQPage",
+        "@id": "https://breeze141all.github.io/hawk-site/#faq",
+        "mainEntity": [
+          {
+            "@type": "Question",
+            "name": "Чому Hawk Terminal створено на Rust, а не на Electron?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Rust у поєднанні з GUI-фреймворком Iced забезпечує нульові паузи збирача сміття (Zero GC stalls), нативну багатопоточність та затримку обробки ордербука до 0.1 мс при споживанні пам'яті в рази меншому за Electron-додатки."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Чи потрібні сторонні сервери для роботи терміналу?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Ні. Hawk Terminal з'єднується безпосередньо з публічними та приватними WebSocket/REST API бірж (Binance, Bybit, Hyperliquid, OKX). Ваші API-ключі зберігаються виключно локально."
+            }
+          }
+        ]
+      }
+    ]
+  }
+  </script>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+  <style>
+    :root {
+      --clr-base-100: #010001;
+      --clr-base-200: #07070a;
+      --clr-base-300: #0e0e14;
+      --clr-content-100: #ffffff;
+      --clr-content-200: #d4d4d8;
+      --clr-content-300: #82828e;
+      --clr-border: rgba(255, 255, 255, 0.14);
+      --clr-border-subtle: rgba(255, 255, 255, 0.07);
+      --clr-primary: #ffffff;
+      --clr-primary-hover: #e4e4e7;
+      --clr-focus: #ffffff;
+      --font-sans: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      --font-mono: 'JetBrains Mono', monospace;
+      --ease-boon: cubic-bezier(0.5, 0.1, 0, 1);
+      --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    html {
+      scroll-behavior: smooth;
+      color-scheme: dark;
+    }
+
+    body {
+      background-color: var(--clr-base-100);
+      color: var(--clr-content-100);
+      font-family: var(--font-sans);
+      line-height: 1.5;
+      text-rendering: optimizelegibility;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+      overflow-x: hidden;
+      min-height: 100dvh;
+      position: relative;
+    }
+
+    :focus-visible {
+      outline: 2px solid var(--clr-focus);
+      outline-offset: 3px;
+    }
+
+    /* -------------------------------------------------------------
+       1. ENTRANCE CURTAIN / LOADER ("як в нього в'їжджають")
+       ------------------------------------------------------------- */
+    #loader {
+      position: fixed;
+      inset: 0;
+      background-color: var(--clr-base-100);
+      z-index: 9999;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      pointer-events: all;
+      transition: transform 0.95s var(--ease-boon), opacity 0.4s ease 0.6s;
+    }
+
+    #loader.dismissed {
+      transform: translateY(-100%);
+      pointer-events: none;
+      opacity: 0;
+    }
+
+    .loader-content {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 1.5rem;
+    }
+
+    .loader-logo svg {
+      width: 44px;
+      height: 44px;
+      animation: logoBreathe 1.8s ease-in-out infinite alternate;
+    }
+
+    @keyframes logoBreathe {
+      from { opacity: 0.4; transform: scale(0.95); }
+      to { opacity: 1; transform: scale(1.05); }
+    }
+
+    .loader-bar-wrap {
+      width: 180px;
+      height: 2px;
+      background: rgba(255, 255, 255, 0.1);
+      position: relative;
+      overflow: hidden;
+      border-radius: 2px;
+    }
+
+    .loader-bar {
+      position: absolute;
+      top: 0;
+      left: 0;
+      height: 100%;
+      width: 0%;
+      background: #ffffff;
+      box-shadow: 0 0 12px #ffffff;
+      animation: loaderProgress 0.8s var(--ease-out-expo) forwards;
+    }
+
+    @keyframes loaderProgress {
+      0% { width: 0%; }
+      60% { width: 75%; }
+      100% { width: 100%; }
+    }
+
+    .loader-text {
+      font-family: var(--font-mono);
+      font-size: 0.72rem;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--clr-content-300);
+    }
+
+    /* -------------------------------------------------------------
+       2. INTERACTIVE THREE-CANVAS BACKGROUND
+       ------------------------------------------------------------- */
+    .three-canvas-container {
+      position: fixed;
+      inset: 0;
+      z-index: -1;
+      pointer-events: none;
+      overflow: hidden;
+    }
+
+    canvas.three-canvas {
+      width: 100%;
+      height: 100%;
+      display: block;
+    }
+
+    /* -------------------------------------------------------------
+       3. TYPOGRAPHY (Boon Global Aesthetic)
+       ------------------------------------------------------------- */
+    h1, .h1 {
+      text-transform: uppercase;
+      font-weight: 800;
+      line-height: 0.92;
+      letter-spacing: clamp(-0.25rem, -0.3vw, -0.05rem);
+      font-size: clamp(2.75rem, 7.5vw + 1rem, 7.25rem);
+    }
+
+    h2, .h2 {
+      text-transform: uppercase;
+      font-weight: 700;
+      line-height: 0.96;
+      letter-spacing: clamp(-0.15rem, -0.18vw, -0.04rem);
+      font-size: clamp(2.2rem, 5vw + 0.8rem, 4.8rem);
+    }
+
+    h3, .h3 {
+      text-transform: uppercase;
+      font-weight: 600;
+      line-height: 1.1;
+      letter-spacing: -0.03em;
+      font-size: clamp(1.4rem, 2vw + 0.5rem, 2.2rem);
+    }
+
+    p {
+      color: var(--clr-content-200);
+      font-size: clamp(0.9rem, 0.3vw + 0.85rem, 1.05rem);
+      line-height: 1.6;
+    }
+
+    .text-mono {
+      font-family: var(--font-mono);
+    }
+
+    .text-label {
+      font-family: var(--font-mono);
+      text-transform: uppercase;
+      font-size: 0.75rem;
+      letter-spacing: 0.12em;
+      color: var(--clr-content-300);
+    }
+
+    .container {
+      width: 100%;
+      max-width: 1320px;
+      margin-inline: auto;
+      padding-inline: clamp(1rem, 4vw, 3rem);
+      position: relative;
+    }
+
+    /* -------------------------------------------------------------
+       4. DOT GRID MATRIX MARKERS (Boon Signature Corner Elements)
+       ------------------------------------------------------------- */
+    .dot-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 3px);
+      gap: 3px;
+      width: fit-content;
+      pointer-events: none;
+    }
+
+    .dot-grid .dot {
+      width: 3px;
+      height: 3px;
+      border-radius: 50%;
+      background: var(--clr-content-100);
+      opacity: 0.4;
+    }
+
+    .card-corner-dots {
+      position: absolute;
+      top: 0.75rem;
+      right: 0.75rem;
+    }
+
+    /* -------------------------------------------------------------
+       5. FLOATING HEADER & ENTRANCE ANIMATION
+       ------------------------------------------------------------- */
+    header#header {
+      position: fixed;
+      top: 1.25rem;
+      inset-inline: 0;
+      z-index: 100;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding-inline: 1rem;
+      pointer-events: none;
+      transform: translateY(-80px);
+      opacity: 0;
+      transition: transform 0.85s var(--ease-boon), opacity 0.85s ease;
+    }
+
+    header#header.revealed {
+      transform: translateY(0);
+      opacity: 1;
+    }
+
+    .nav-bar {
+      pointer-events: auto;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1.5rem;
+      background: rgba(8, 8, 12, 0.75);
+      -webkit-backdrop-filter: blur(20px);
+      backdrop-filter: blur(20px);
+      border: 1px solid var(--clr-border);
+      border-radius: 0.75rem;
+      padding: 0.6rem 1.25rem;
+      max-width: 980px;
+      width: 100%;
+      box-shadow: 0 10px 35px rgba(0, 0, 0, 0.7);
+    }
+
+    .nav-logo {
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+      text-decoration: none;
+      color: #fff;
+    }
+
+    .nav-logo img {
+      width: 30px;
+      height: 30px;
+      border-radius: 6px;
+    }
+
+    .nav-brand {
+      font-weight: 800;
+      font-size: 0.95rem;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+    }
+
+    .nav-links {
+      display: flex;
+      align-items: center;
+      gap: 1.5rem;
+      list-style: none;
+    }
+
+    .nav-links a {
+      color: var(--clr-content-200);
+      text-decoration: none;
+      font-size: 0.82rem;
+      font-family: var(--font-mono);
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      transition: color 0.2s ease;
+    }
+
+    .nav-links a:hover {
+      color: #ffffff;
+    }
+
+    /* -------------------------------------------------------------
+       6. BUTTON SYSTEM (100% Monochrome White/Zinc - Zero Orange)
+       ------------------------------------------------------------- */
+    .btn-wrap {
+      display: inline-flex;
+    }
+
+    .btn {
+      position: relative;
+      overflow: hidden;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.6rem;
+      padding: 0.75rem 1.4rem;
+      border-radius: 0.35rem;
+      font-family: var(--font-sans);
+      font-size: 0.85rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      text-decoration: none;
+      cursor: pointer;
+      border: 1px solid transparent;
+      transition: all 0.25s var(--ease-out-expo);
+      white-space: nowrap;
+      min-height: 44px;
+      min-width: 44px;
+    }
+
+    .btn-filled {
+      background: #ffffff;
+      color: #010001;
+      box-shadow: 0 0 20px rgba(255, 255, 255, 0.2);
+    }
+
+    .btn-filled:hover {
+      background: #e4e4e7;
+      transform: translateY(-2px);
+      box-shadow: 0 0 30px rgba(255, 255, 255, 0.35);
+    }
+
+    .btn-filled:active {
+      transform: translateY(0);
+    }
+
+    .btn-outline {
+      background: rgba(255, 255, 255, 0.03);
+      color: #ffffff;
+      border: 1px solid var(--clr-border);
+      -webkit-backdrop-filter: blur(12px);
+      backdrop-filter: blur(12px);
+    }
+
+    .btn-outline:hover {
+      background: rgba(255, 255, 255, 0.12);
+      border-color: #ffffff;
+      transform: translateY(-2px);
+    }
+
+    /* -------------------------------------------------------------
+       7. HERO SECTION (Boon Global Layered Shards & Kinetic Reveal)
+       ------------------------------------------------------------- */
+    section.hero {
+      min-height: 100dvh;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      padding-top: 8rem;
+      padding-bottom: 4rem;
+      position: relative;
+      overflow: hidden;
+    }
+
+    /* Floating UI Shards in Hero Background */
+    .hero-shards-bg {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      z-index: 0;
+      overflow: hidden;
+    }
+
+    .hero-shard {
+      position: absolute;
+      border-radius: 0.6rem;
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.8), inset 0 0 0 1px rgba(255, 255, 255, 0.08);
+      background: rgba(10, 10, 15, 0.5);
+      -webkit-backdrop-filter: blur(8px);
+      backdrop-filter: blur(8px);
+      opacity: 0;
+      transform: scale(0.92) translateY(50px);
+      transition: transform 1.2s var(--ease-out-expo), opacity 1.2s ease;
+      overflow: hidden;
+    }
+
+    .hero.revealed .hero-shard {
+      opacity: 0.35;
+      transform: scale(1) translateY(0);
+    }
+
+    .hero.revealed .hero-shard:hover {
+      opacity: 0.6;
+    }
+
+    .hero-shard-1 {
+      top: 12%;
+      right: -5%;
+      width: 48vw;
+      max-width: 680px;
+      aspect-ratio: 16/10;
+      transform: rotate(2deg);
+      transition-delay: 0.1s;
+    }
+
+    .hero-shard-2 {
+      bottom: 8%;
+      right: 18%;
+      width: 36vw;
+      max-width: 520px;
+      aspect-ratio: 16/9;
+      transform: rotate(-1.5deg);
+      transition-delay: 0.25s;
+    }
+
+    .hero-shard img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+      filter: grayscale(100%) contrast(110%);
+    }
+
+    .hero-content {
+      position: relative;
+      z-index: 2;
+    }
+
+    .hero-meta-strip {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid var(--clr-border-subtle);
+      padding-bottom: 0.85rem;
+      margin-bottom: 2rem;
+      opacity: 0;
+      transform: translateY(20px);
+      transition: all 0.8s var(--ease-out-expo) 0.2s;
+    }
+
+    .hero.revealed .hero-meta-strip {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    .hero-title-wrap {
+      margin-bottom: 2.5rem;
+      opacity: 0;
+      transform: translateY(35px);
+      transition: all 0.9s var(--ease-out-expo) 0.35s;
+    }
+
+    .hero.revealed .hero-title-wrap {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    .hero-title-wrap h1 {
+      color: #ffffff;
+    }
+
+    .hero-title-wrap h1 mark {
+      background: transparent;
+      color: #ffffff;
+      text-decoration: underline;
+      text-underline-offset: 8px;
+      text-decoration-thickness: 3px;
+    }
+
+    .hero-bottom-grid {
+      display: grid;
+      grid-template-columns: 1.5fr 1fr;
+      gap: 3rem;
+      align-items: end;
+      border-top: 1px solid var(--clr-border-subtle);
+      padding-top: 2rem;
+      opacity: 0;
+      transform: translateY(30px);
+      transition: all 0.9s var(--ease-out-expo) 0.5s;
+    }
+
+    .hero.revealed .hero-bottom-grid {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    @media (max-width: 860px) {
+      .hero-bottom-grid {
+        grid-template-columns: 1fr;
+        gap: 1.5rem;
+      }
+      .nav-links {
+        display: none;
+      }
+      .hero-shard-1 {
+        width: 80vw;
+        right: -15%;
+      }
+      .hero-shard-2 {
+        display: none;
+      }
+    }
+
+    .hero-desc {
+      font-size: clamp(1rem, 1.4vw, 1.25rem);
+      color: var(--clr-content-200);
+      max-width: 650px;
+    }
+
+    .hero-actions {
+      display: flex;
+      gap: 1rem;
+      flex-wrap: wrap;
+    }
+
+    .scroll-indicator {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      margin-top: 3.5rem;
+      font-family: var(--font-mono);
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: var(--clr-content-300);
+    }
+
+    .scroll-indicator .dot-pulse {
+      width: 6px;
+      height: 6px;
+      background: #ffffff;
+      border-radius: 50%;
+      box-shadow: 0 0 10px #ffffff;
+      animation: pulse 2s infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 0.3; transform: scale(0.9); }
+      50% { opacity: 1; transform: scale(1.3); }
+    }
+
+    /* -------------------------------------------------------------
+       8. ROLODEX STATEMENT (Boon Global Style)
+       ------------------------------------------------------------- */
+    section.rolodex-section {
+      padding: 7rem 0;
+      border-top: 1px solid var(--clr-border-subtle);
+      border-bottom: 1px solid var(--clr-border-subtle);
+      background: var(--clr-base-200);
+      position: relative;
+    }
+
+    .rolodex-container {
+      text-align: center;
+      max-width: 1080px;
+      margin: 0 auto;
+    }
+
+    .rolodex-lead {
+      font-family: var(--font-sans);
+      font-size: clamp(1.4rem, 2.5vw, 2.4rem);
+      font-weight: 500;
+      color: var(--clr-content-200);
+      line-height: 1.3;
+      margin-bottom: 0.75rem;
+    }
+
+    .rolodex-box {
+      min-height: 90px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .rolodex-text {
+      font-family: var(--font-sans);
+      font-size: clamp(1.75rem, 3.5vw, 3.25rem);
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: -0.02em;
+      color: #ffffff;
+      border-bottom: 2px solid #ffffff;
+      padding-bottom: 0.25rem;
+      display: inline-block;
+      transition: opacity 0.3s ease, transform 0.3s ease;
+    }
+
+    /* -------------------------------------------------------------
+       9. NEW ALIAS / CAREERS SECTION: ENGINEERING SPECIFICATIONS
+       ------------------------------------------------------------- */
+    section.alias-section {
+      padding: 7rem 0;
+      border-top: 1px solid var(--clr-border-subtle);
+      position: relative;
+    }
+
+    .alias-header {
+      margin-bottom: 4rem;
+    }
+
+    /* Testimonial Quote block (Boon Global Style) */
+    .quote-box {
+      background: rgba(14, 14, 20, 0.6);
+      border: 1px solid var(--clr-border);
+      border-radius: 0.75rem;
+      padding: clamp(2rem, 4vw, 3.5rem);
+      position: relative;
+      margin-bottom: 4rem;
+      -webkit-backdrop-filter: blur(16px);
+      backdrop-filter: blur(16px);
+    }
+
+    .quote-icon svg {
+      width: 32px;
+      height: 32px;
+      fill: #ffffff;
+      opacity: 0.2;
+      margin-bottom: 1.5rem;
+    }
+
+    blockquote.quote-text {
+      font-size: clamp(1.2rem, 2vw, 1.8rem);
+      font-weight: 500;
+      line-height: 1.35;
+      color: #ffffff;
+      margin-bottom: 1.5rem;
+      letter-spacing: -0.02em;
+    }
+
+    .quote-author {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-top: 1px solid var(--clr-border-subtle);
+      padding-top: 1.25rem;
+    }
+
+    .quote-role {
+      font-family: var(--font-mono);
+      font-size: 0.8rem;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: var(--clr-content-200);
+    }
+
+    .quote-nav {
+      display: flex;
+      gap: 0.5rem;
+    }
+
+    .quote-btn {
+      width: 36px;
+      height: 36px;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid var(--clr-border);
+      border-radius: 0.25rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      color: #ffffff;
+      transition: all 0.2s ease;
+    }
+
+    .quote-btn:hover {
+      background: #ffffff;
+      color: #010001;
+      border-color: #ffffff;
+    }
+
+    /* Specs Accordion List */
+    .specs-list {
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+    }
+
+    .spec-item {
+      background: rgba(14, 14, 20, 0.5);
+      border: 1px solid var(--clr-border);
+      border-radius: 0.5rem;
+      overflow: hidden;
+      transition: border-color 0.25s, background 0.25s;
+    }
+
+    .spec-item:hover, .spec-item[data-open="true"] {
+      border-color: #ffffff;
+      background: rgba(20, 20, 28, 0.7);
+    }
+
+    .spec-btn {
+      width: 100%;
+      background: transparent;
+      border: none;
+      padding: 1.5rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      color: #ffffff;
+      cursor: pointer;
+      text-align: left;
+    }
+
+    .spec-left {
+      display: flex;
+      align-items: center;
+      gap: 1.5rem;
+    }
+
+    .spec-num {
+      font-family: var(--font-mono);
+      font-size: 0.85rem;
+      color: var(--clr-content-300);
+    }
+
+    .spec-title {
+      font-size: clamp(1.05rem, 1.5vw, 1.35rem);
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.02em;
+    }
+
+    .spec-indicator {
+      font-family: var(--font-mono);
+      font-size: 1.25rem;
+      transition: transform 0.3s ease;
+    }
+
+    .spec-item[data-open="true"] .spec-indicator {
+      transform: rotate(45deg);
+    }
+
+    .spec-body {
+      max-height: 0;
+      overflow: hidden;
+      transition: max-height 0.4s var(--ease-out-expo);
+      padding-inline: 1.5rem;
+    }
+
+    .spec-item[data-open="true"] .spec-body {
+      max-height: 300px;
+      padding-bottom: 1.5rem;
+    }
+
+    .spec-body p {
+      color: var(--clr-content-200);
+      font-size: 0.95rem;
+      line-height: 1.7;
+    }
+
+    /* -------------------------------------------------------------
+       10. SHOWCASE & ARCHITECTURE (Boon Cards with Inner Dashed Border)
+       ------------------------------------------------------------- */
+    section.showcase-section {
+      padding: 6rem 0;
+      background: var(--clr-base-200);
+      border-top: 1px solid var(--clr-border-subtle);
+    }
+
+    .showcase-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(480px, 1fr));
+      gap: 2rem;
+      margin-top: 3rem;
+    }
+
+    @media (max-width: 600px) {
+      .showcase-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .screen-card {
+      background: rgba(14, 14, 20, 0.7);
+      border: 1px solid var(--clr-border);
+      border-radius: 0.6rem;
+      padding: 0.5rem;
+      overflow: hidden;
+      position: relative;
+      transition: all 0.3s ease;
+    }
+
+    .screen-card:hover {
+      border-color: #ffffff;
+      box-shadow: 0 15px 40px rgba(0, 0, 0, 0.7), 0 0 25px rgba(255, 255, 255, 0.08);
+      transform: translateY(-4px);
+    }
+
+    .screen-card-inner {
+      border: 1px dashed var(--clr-border);
+      border-radius: 0.45rem;
+      padding: 1.25rem;
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+    }
+
+    .screen-img-wrap {
+      width: 100%;
+      border-radius: 0.35rem;
+      overflow: hidden;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      background: #000;
+    }
+
+    .screen-img-wrap img {
+      width: 100%;
+      height: auto;
+      display: block;
+      transition: transform 0.4s ease;
+    }
+
+    .screen-card:hover .screen-img-wrap img {
+      transform: scale(1.02);
+    }
+
+    .screen-title {
+      font-weight: 700;
+      font-size: 1.15rem;
+      text-transform: uppercase;
+      letter-spacing: -0.01em;
+      color: #ffffff;
+    }
+
+    /* -------------------------------------------------------------
+       11. FAQ ACCORDION (Rule 13)
+       ------------------------------------------------------------- */
+    section.faq-section {
+      padding: 6rem 0;
+      border-top: 1px solid var(--clr-border-subtle);
+    }
+
+    .faq-grid {
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+      max-width: 960px;
+      margin: 3rem auto 0;
+    }
+
+    .faq-item {
+      background: rgba(14, 14, 20, 0.5);
+      border: 1px solid var(--clr-border);
+      border-radius: 0.5rem;
+      overflow: hidden;
+      transition: border-color 0.2s;
+    }
+
+    .faq-item:hover, .faq-item[data-open="true"] {
+      border-color: #ffffff;
+    }
+
+    .faq-button {
+      width: 100%;
+      background: transparent;
+      border: none;
+      padding: 1.25rem 1.5rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      color: #ffffff;
+      font-weight: 600;
+      font-size: 1.05rem;
+      cursor: pointer;
+      text-align: left;
+    }
+
+    .faq-answer {
+      max-height: 0;
+      overflow: hidden;
+      transition: max-height 0.35s var(--ease-out-expo);
+      padding-inline: 1.5rem;
+    }
+
+    .faq-item[data-open="true"] .faq-answer {
+      max-height: 250px;
+      padding-bottom: 1.25rem;
+    }
+
+    .faq-answer p {
+      color: var(--clr-content-200);
+      font-size: 0.95rem;
+    }
+
+    /* -------------------------------------------------------------
+       12. FOOTER (Boon Global Frame with 4-Corner Dot Matrix)
+       ------------------------------------------------------------- */
+    footer#footer {
+      border-top: 1px solid var(--clr-border);
+      background: #010001;
+      padding: 5rem 0 3rem;
+      position: relative;
+    }
+
+    .footer-dot-wrapper {
+      position: absolute;
+      inset: 1.5rem;
+      pointer-events: none;
+    }
+
+    .footer-dot-1 { position: absolute; top: 0; left: 0; }
+    .footer-dot-2 { position: absolute; top: 0; right: 0; }
+    .footer-dot-3 { position: absolute; bottom: 0; left: 0; }
+    .footer-dot-4 { position: absolute; bottom: 0; right: 0; }
+
+    .footer-grid {
+      display: grid;
+      grid-template-columns: 2fr 1fr 1fr 1fr;
+      gap: 3rem;
+      margin-bottom: 4rem;
+    }
+
+    @media (max-width: 860px) {
+      .footer-grid {
+        grid-template-columns: 1fr 1fr;
+      }
+    }
+
+    @media (max-width: 540px) {
+      .footer-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .footer-brand p {
+      margin-top: 1rem;
+      color: var(--clr-content-300);
+      font-size: 0.88rem;
+      max-width: 320px;
+    }
+
+    .footer-col h4 {
+      font-family: var(--font-mono);
+      text-transform: uppercase;
+      font-size: 0.8rem;
+      letter-spacing: 0.12em;
+      color: #ffffff;
+      margin-bottom: 1.25rem;
+    }
+
+    .footer-col ul {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+    }
+
+    .footer-col a {
+      color: var(--clr-content-200);
+      text-decoration: none;
+      font-size: 0.88rem;
+      transition: color 0.2s;
+    }
+
+    .footer-col a:hover {
+      color: #ffffff;
+    }
+
+    .footer-bottom {
+      border-top: 1px solid var(--clr-border-subtle);
+      padding-top: 2rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 1rem;
+      color: var(--clr-content-300);
+      font-family: var(--font-mono);
+      font-size: 0.78rem;
+    }
+
+    /* Cookie Banner */
+    .cookie-banner {
+      position: fixed;
+      bottom: 1.5rem;
+      right: 1.5rem;
+      max-width: 420px;
+      background: rgba(10, 10, 15, 0.9);
+      border: 1px solid var(--clr-border);
+      border-radius: 0.5rem;
+      padding: 1.25rem;
+      z-index: 200;
+      box-shadow: 0 10px 40px rgba(0, 0, 0, 0.8);
+      -webkit-backdrop-filter: blur(16px);
+      backdrop-filter: blur(16px);
+      display: none;
+    }
+
+    .cookie-banner.active {
+      display: block;
+      animation: slideUp 0.3s ease-out;
+    }
+
+    @keyframes slideUp {
+      from { transform: translateY(20px); opacity: 0; }
+      to { transform: translateY(0); opacity: 1; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- 1. ENTRANCE LOADER CURTAIN -->
+  <div id="loader" aria-hidden="true">
+    <div class="loader-content">
+      <div class="loader-logo">
+        <svg viewBox="0 0 24 24" fill="none">
+          <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" stroke="#ffffff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </div>
+      <div class="loader-bar-wrap">
+        <div class="loader-bar"></div>
+      </div>
+      <div class="loader-text">HAWK CORE // v0.8.6 INITIALIZING</div>
+    </div>
+  </div>
+
+  <!-- 2. THREE-CANVAS INTERACTIVE CONSTELLATION -->
+  <div class="three-canvas-container" aria-hidden="true">
+    <canvas id="three-canvas" class="three-canvas"></canvas>
+  </div>
+
+  <!-- 3. FLOATING NAV BAR -->
+  <header id="header">
+    <nav class="nav-bar" aria-label="Головна навігація">
+      <a href="#" class="nav-logo" aria-label="Hawk Terminal Головна">
+        <img src="assets/icon.png" alt="Hawk Terminal Logo" width="30" height="30">
+        <span class="nav-brand">HAWK TERMINAL</span>
+      </a>
+      <ul class="nav-links">
+        <li><a href="#showcase">Можливості</a></li>
+        <li><a href="#specs">Специфікації</a></li>
+        <li><a href="#faq">FAQ</a></li>
+      </ul>
+      <div class="btn-wrap">
+        <a href="https://github.com/Breeze141all/hawk-terminal" target="_blank" rel="noopener noreferrer" class="btn btn-filled">
+          <span>GITHUB REPO</span>
+          <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M2 10L10 2M10 2H4M10 2V8" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </a>
+      </div>
+    </nav>
+  </header>
+
+  <main>
+    <!-- 4. HERO SECTION -->
+    <section class="hero" id="hero">
+      <div class="hero-shards-bg" aria-hidden="true">
+        <div class="hero-shard hero-shard-1">
+          <img src="assets/screenshot-terminal.png" alt="" loading="lazy">
+        </div>
+        <div class="hero-shard hero-shard-2">
+          <img src="assets/screenshot-footprint.png" alt="" loading="lazy">
+        </div>
+      </div>
+
+      <div class="container hero-content">
+        <div class="hero-meta-strip">
+          <span class="text-mono text-label">[ SYSTEM STATUS: SECURE LOCAL-FIRST ]</span>
+          <span class="text-mono text-label">[ ARCHITECTURE: RUST + ICED v0.14 ]</span>
+        </div>
+
+        <div class="hero-title-wrap">
+          <h1>ENGINEER THE EDGE<br>IN <mark>ORDER FLOW</mark>.</h1>
+        </div>
+
+        <div class="hero-bottom-grid">
+          <p class="hero-desc">
+            Нативний десктопний криптотермінал без проміжних серверів та Electron. 2D теплові карти ліквідацій, тіковий Footprint, об'ємні профілі TPO та повний ринковий реплей на безпосередніх WebSocket-шлюзах.
+          </p>
+          <div class="hero-actions">
+            <a href="https://github.com/Breeze141all/hawk-terminal" target="_blank" rel="noopener noreferrer" class="btn btn-filled">
+              <span>ЗАВАНТАЖИТИ RUST БІЛД</span>
+              <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M6 1v8m0 0l3-3m-3 3L3 6M1 11h10" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+            </a>
+            <a href="#specs" class="btn btn-outline">
+              <span>АРХІТЕКТУРА</span>
+            </a>
+          </div>
+        </div>
+
+        <div class="scroll-indicator">
+          <span class="dot-pulse"></span>
+          <span>SCROLL TO EXPLORE SPECIFICATIONS</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- 5. ROLODEX SECTION -->
+    <section class="rolodex-section" aria-label="Ключові можливості">
+      <div class="container rolodex-container">
+        <div class="card-corner-dots"><div class="dot-grid"><div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div></div></div>
+        <p class="rolodex-lead">Нульові паузи збирача сміття для бездоганного аналізу</p>
+        <div class="rolodex-box">
+          <span class="rolodex-text" id="rolodex">2D HEATMAP LIQUIDATIONS</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- 6. NEW ALIAS: ENGINEERING SPECIFICATIONS (BOON CAREERS STYLE) -->
+    <section class="alias-section" id="specs">
+      <div class="container">
+        <div class="alias-header">
+          <p class="text-label" style="margin-bottom: 1rem;">[ ARCHITECTURAL MANIFESTO // ALIAS ]</p>
+          <h2>BUILD SYSTEMS THAT OUTPERFORM.</h2>
+        </div>
+
+        <!-- Quote Block -->
+        <div class="quote-box">
+          <div class="card-corner-dots"><div class="dot-grid"><div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div></div></div>
+          <div class="quote-icon">
+            <svg viewBox="0 0 34 31"><path d="M14.14 31H0V15.605L7.278 0h7.383L7.798 16.66h6.343V31Zm19.34 0H19.34V15.605L26.617 0H34l-6.862 16.66h6.342V31Z"/></svg>
+          </div>
+          <blockquote class="quote-text" id="quote-display">
+            "Торгові термінали не повинні ховатися за Electron та паузами Garbage Collection. Перенесення ядра на нативний Rust і прямі L3 біржові шлюзи повністю ліквідує затримку передачі даних."
+          </blockquote>
+          <div class="quote-author">
+            <span class="quote-role" id="quote-author-display">SYSTEM ARCHITECT // HAWK CORE</span>
+            <div class="quote-nav">
+              <button class="quote-btn" id="quote-prev" aria-label="Попередня цитата">←</button>
+              <button class="quote-btn" id="quote-next" aria-label="Наступна цитата">→</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Expandable Specification Drawers -->
+        <div class="specs-list">
+          <div class="spec-item" data-open="true">
+            <button class="spec-btn" aria-expanded="true">
+              <div class="spec-left">
+                <span class="spec-num">01</span>
+                <span class="spec-title">SUB-MILLISECOND ORDERBOOK RECONSTRUCTION</span>
+              </div>
+              <span class="spec-indicator">+</span>
+            </button>
+            <div class="spec-body">
+              <p>Швидкісний рушій агрегації ордербука на базі FxHashMap і FastWebSockets. Пряма реконструкція книги заявок L2/L3 з бірж Binance, Bybit, Hyperliquid та OKX без сторонніх посередників.</p>
+            </div>
+          </div>
+
+          <div class="spec-item" data-open="false">
+            <button class="spec-btn" aria-expanded="false">
+              <div class="spec-left">
+                <span class="spec-num">02</span>
+                <span class="spec-title">2D LIQUIDATION HEATMAP ENGINE</span>
+              </div>
+              <span class="spec-indicator">+</span>
+            </button>
+            <div class="spec-body">
+              <p>Математична модель розрахунку каскадних ліквідацій у режимі реального часу. GPU-прискорений рендеринг глибини пулів ліквідності з підтримкою користувацьких діапазонів плечей (10x–100x).</p>
+            </div>
+          </div>
+
+          <div class="spec-item" data-open="false">
+            <button class="spec-btn" aria-expanded="false">
+              <div class="spec-left">
+                <span class="spec-num">03</span>
+                <span class="spec-title">BINARY LZ4 FOOTPRINT STREAMING</span>
+              </div>
+              <span class="spec-indicator">+</span>
+            </button>
+            <div class="spec-body">
+              <p>Високопродуктивний двійковий кеш кластерів на LZ4 зі стисненням у пам'яті. Миттєве перемикання таймфреймів та мультиплікаторів ціни без перезавантаження даних з мережі.</p>
+            </div>
+          </div>
+
+          <div class="spec-item" data-open="false">
+            <button class="spec-btn" aria-expanded="false">
+              <div class="spec-left">
+                <span class="spec-num">04</span>
+                <span class="spec-title">SOVEREIGN NON-CUSTODIAL LOCAL DATA</span>
+              </div>
+              <span class="spec-indicator">+</span>
+            </button>
+            <div class="spec-body">
+              <p>Абсолютний суверенітет трейдера. Жодних аналітичних трекерів, хмарних бекендів чи телеметрії. Усі конфігурації, лейаути та API-ключі шифруються виключно на вашому локальному диску.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 7. SHOWCASE SECTION -->
+    <section class="showcase-section" id="showcase">
+      <div class="container">
+        <div class="alias-header">
+          <p class="text-label" style="margin-bottom: 1rem;">[ INTERFACE ARCHITECTURE ]</p>
+          <h2>PRODUCTION MODULES.</h2>
+        </div>
+
+        <div class="showcase-grid">
+          <div class="screen-card">
+            <div class="card-corner-dots"><div class="dot-grid"><div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div></div></div>
+            <div class="screen-card-inner">
+              <div class="screen-img-wrap">
+                <img src="assets/screenshot-terminal.png" alt="Multi-pane Workspace" loading="lazy">
+              </div>
+              <h3 class="screen-title">MULTI-PANE WORKSPACE</h3>
+              <p>Гнучка сітка з необмеженим розбиттям панелей (Nested Split Panes). Одночасний моніторинг десятків пар та таймфреймів з нульовою затримкою інтерфейсу.</p>
+            </div>
+          </div>
+
+          <div class="screen-card">
+            <div class="card-corner-dots"><div class="dot-grid"><div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div></div></div>
+            <div class="screen-card-inner">
+              <div class="screen-img-wrap">
+                <img src="assets/screenshot-heatmap.png" alt="2D Liquidation Heatmap" loading="lazy">
+              </div>
+              <h3 class="screen-title">2D LIQUIDATION HEATMAP</h3>
+              <p>Пряма візуалізація потенційних цінових магнітів та зон маржин-колів на основі відкритих позицій ф'ючерсних ринків.</p>
+            </div>
+          </div>
+
+          <div class="screen-card">
+            <div class="card-corner-dots"><div class="dot-grid"><div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div></div></div>
+            <div class="screen-card-inner">
+              <div class="screen-img-wrap">
+                <img src="assets/screenshot-footprint.png" alt="Footprint & Delta Profile" loading="lazy">
+              </div>
+              <h3 class="screen-title">FOOTPRINT & CLUSTERS</h3>
+              <p>Аналіз балансу Bid/Ask, кумулятивної дельти (CVD), дисбалансів та мікроструктури ринку на кожному окремому ціновому рівні.</p>
+            </div>
+          </div>
+
+          <div class="screen-card">
+            <div class="card-corner-dots"><div class="dot-grid"><div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div></div></div>
+            <div class="screen-card-inner">
+              <div class="screen-img-wrap">
+                <img src="assets/screenshot-replay.png" alt="Market Replay Engine" loading="lazy">
+              </div>
+              <h3 class="screen-title">TICK-LEVEL MARKET REPLAY</h3>
+              <p>Повний симулятор історичних сесій з кешуванням угод. Тестуйте торгові гіпотези та патерни з точністю до одного тіка.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 8. FAQ SECTION -->
+    <section class="faq-section" id="faq">
+      <div class="container">
+        <div class="alias-header" style="text-align: center;">
+          <p class="text-label" style="margin-bottom: 1rem;">[ CLARIFICATIONS ]</p>
+          <h2>ЧАСТІ ЗАПИТАННЯ.</h2>
+        </div>
+
+        <div class="faq-grid">
+          <div class="faq-item" data-open="false">
+            <button class="faq-button" aria-expanded="false">
+              <span>Чому саме нативний Rust, а не браузерний клієнт?</span>
+              <span class="spec-indicator">+</span>
+            </button>
+            <div class="faq-answer">
+              <p>Браузери та Electron мають накладні витрати на збирач сміття (V8 GC), що викликає лаги під час пікових навантажень. Rust працює безпосередньо з системною пам'яттю та графічним конвеєром, споживаючи в 10 разів менше ресурсів.</p>
+            </div>
+          </div>
+
+          <div class="faq-item" data-open="false">
+            <button class="faq-button" aria-expanded="false">
+              <span>Які криптовалютні біржі підтримуються?</span>
+              <span class="spec-indicator">+</span>
+            </button>
+            <div class="faq-answer">
+              <p>Hawk Terminal підтримує нативні конектори до Binance (Spot & Futures), Bybit, Hyperliquid та OKX. Архітектура адаптерів дозволяє підключати будь-яку біржу через єдиний Rust-трейт.</p>
+            </div>
+          </div>
+
+          <div class="faq-item" data-open="false">
+            <button class="faq-button" aria-expanded="false">
+              <span>Де зберігаються мої персональні дані та API-ключі?</span>
+              <span class="spec-indicator">+</span>
+            </button>
+            <div class="faq-answer">
+              <p>Виключно у локальному зашифрованому файлі на вашому пристрої. Термінал не має жодного сервера розробника — усі з'єднання йдуть на прямі публічні API бірж.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- 9. FOOTER -->
+  <footer id="footer">
+    <div class="footer-dot-wrapper">
+      <div class="dot-grid footer-dot-1"><div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div></div>
+      <div class="dot-grid footer-dot-2"><div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div></div>
+      <div class="dot-grid footer-dot-3"><div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div></div>
+      <div class="dot-grid footer-dot-4"><div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div></div>
+    </div>
+
+    <div class="container">
+      <div class="footer-grid">
+        <div class="footer-brand">
+          <a href="#" class="nav-logo">
+            <img src="assets/icon.png" alt="Hawk Terminal Logo" width="32" height="32">
+            <span class="nav-brand">HAWK TERMINAL</span>
+          </a>
+          <p>Sovereign High-Frequency Order Flow & Liquidity Intelligence Desktop Platform.</p>
+        </div>
+
+        <div class="footer-col">
+          <h4>ПРОДУКТ</h4>
+          <ul>
+            <li><a href="#showcase">Можливості</a></li>
+            <li><a href="#specs">Специфікації</a></li>
+            <li><a href="https://github.com/Breeze141all/hawk-terminal" target="_blank" rel="noopener noreferrer">Джерельний код</a></li>
+          </ul>
+        </div>
+
+        <div class="footer-col">
+          <h4>РЕСУРСИ</h4>
+          <ul>
+            <li><a href="#faq">FAQ</a></li>
+            <li><a href="privacy.html">Конфіденційність</a></li>
+            <li><a href="terms.html">Умови використання</a></li>
+          </ul>
+        </div>
+
+        <div class="footer-col">
+          <h4>ВЕРСІЯ</h4>
+          <p class="text-mono" style="font-size: 0.85rem; color: #fff;">v0.8.6 STABLE</p>
+          <p class="text-mono" style="font-size: 0.75rem; color: var(--clr-content-300); margin-top: 0.5rem;">EDITION 2024</p>
+        </div>
+      </div>
+
+      <div class="footer-bottom">
+        <span>© 2026 HAWK TERMINAL. ALL RIGHTS RESERVED.</span>
+        <span class="text-mono">ZERO GC // LOCAL-FIRST // HIGH VELOCITY</span>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Cookie Banner -->
+  <div id="cookie-banner" class="cookie-banner" role="dialog" aria-label="Згода на кукі">
+    <p style="font-size: 0.85rem; margin-bottom: 1rem; color: var(--clr-content-200);">
+      Ми використовуємо лише технічні файли cookie для збереження ваших налаштувань інтерфейсу. Жодного відстеження.
+    </p>
+    <div style="display: flex; gap: 0.5rem;">
+      <button id="cookie-accept" class="btn btn-filled" style="padding: 0.4rem 0.8rem; font-size: 0.75rem; min-height: 36px;">ПРИЙНЯТИ</button>
+      <button id="cookie-reject" class="btn btn-outline" style="padding: 0.4rem 0.8rem; font-size: 0.75rem; min-height: 36px;">ВІДХИЛИТИ</button>
+    </div>
+  </div>
+
+  <script>
+    // 1. SIGNATURE ENTRANCE ANIMATION ("як в нього в'їжджають")
+    window.addEventListener('DOMContentLoaded', () => {
+      const loader = document.getElementById('loader');
+      const header = document.getElementById('header');
+      const hero = document.getElementById('hero');
+
+      setTimeout(() => {
+        if (loader) loader.classList.add('dismissed');
+        if (header) header.classList.add('revealed');
+        if (hero) hero.classList.add('revealed');
+      }, 450);
+    });
+
+    // 2. HIGH-PERFORMANCE INTERACTIVE CONSTELLATION CANVAS
+    (function initConstellation() {
+      const canvas = document.getElementById('three-canvas');
+      if (!canvas) return;
+      const ctx = canvas.getContext('2d');
+      let w, h, particles = [];
+      const count = window.innerWidth < 768 ? 35 : 70;
+      let mouse = { x: -1000, y: -1000, targetX: -1000, targetY: -1000 };
+
+      function resize() {
+        w = canvas.width = window.innerWidth;
+        h = canvas.height = window.innerHeight;
+      }
+      window.addEventListener('resize', resize);
+      resize();
+
+      window.addEventListener('mousemove', (e) => {
+        mouse.targetX = e.clientX;
+        mouse.targetY = e.clientY;
+      });
+
+      for (let i = 0; i < count; i++) {
+        particles.push({
+          x: Math.random() * w,
+          y: Math.random() * h,
+          vx: (Math.random() - 0.5) * 0.4,
+          vy: (Math.random() - 0.5) * 0.4,
+          r: Math.random() * 1.5 + 1
+        });
+      }
+
+      function draw() {
+        ctx.clearRect(0, 0, w, h);
+        
+        // Smooth mouse inertia
+        mouse.x += (mouse.targetX - mouse.x) * 0.08;
+        mouse.y += (mouse.targetY - mouse.y) * 0.08;
+
+        for (let i = 0; i < count; i++) {
+          let p = particles[i];
+          p.x += p.vx;
+          p.y += p.vy;
+
+          if (p.x < 0) p.x = w;
+          if (p.x > w) p.x = 0;
+          if (p.y < 0) p.y = h;
+          if (p.y > h) p.y = 0;
+
+          // Mouse subtle repulsion
+          const dx = p.x - mouse.x;
+          const dy = p.y - mouse.y;
+          const dist = Math.sqrt(dx * dx + dy * dy);
+          if (dist < 140) {
+            const force = (140 - dist) / 140;
+            p.x += (dx / dist) * force * 1.2;
+            p.y += (dy / dist) * force * 1.2;
+          }
+
+          ctx.beginPath();
+          ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+          ctx.fillStyle = 'rgba(255, 255, 255, 0.25)';
+          ctx.fill();
+
+          // Connect adjacent particles
+          for (let j = i + 1; j < count; j++) {
+            let p2 = particles[j];
+            let d = Math.hypot(p.x - p2.x, p.y - p2.y);
+            if (d < 110) {
+              ctx.beginPath();
+              ctx.moveTo(p.x, p.y);
+              ctx.lineTo(p2.x, p2.y);
+              ctx.strokeStyle = `rgba(255, 255, 255, ${0.12 * (1 - d / 110)})`;
+              ctx.lineWidth = 0.8;
+              ctx.stroke();
+            }
+          }
+        }
+        requestAnimationFrame(draw);
+      }
+      draw();
+    })();
+
+    // 3. ROLODEX ROTATION
+    const rolodexEl = document.getElementById('rolodex');
+    const rolodexItems = [
+      "2D HEATMAP LIQUIDATIONS",
+      "BINARY LZ4 FOOTPRINT",
+      "MULTI-PERIOD VWAP",
+      "RAW L3 WEBSOCKETS",
+      "SUB-MILLISECOND EXECUTION",
+      "TICK-LEVEL REPLAY"
+    ];
+    let rolodexIndex = 0;
+    if (rolodexEl) {
+      setInterval(() => {
+        rolodexEl.style.opacity = '0';
+        rolodexEl.style.transform = 'translateY(12px)';
+        setTimeout(() => {
+          rolodexIndex = (rolodexIndex + 1) % rolodexItems.length;
+          rolodexEl.textContent = rolodexItems[rolodexIndex];
+          rolodexEl.style.opacity = '1';
+          rolodexEl.style.transform = 'translateY(0)';
+        }, 300);
+      }, 3200);
+    }
+
+    // 4. QUOTE SLIDER (Boon Global Quotes)
+    const quotes = [
+      {
+        text: '"Торгові термінали не повинні ховатися за Electron та паузами Garbage Collection. Перенесення ядра на нативний Rust і прямі L3 біржові шлюзи повністю ліквідує затримку передачі даних."',
+        author: "SYSTEM ARCHITECT // HAWK CORE"
+      },
+      {
+        text: '"Суверенна архітектура без сторонніх релеїв унеможливлює витік торгових стратегій. Ви підключаєтесь безпосередньо до вузлів бірж, отримуючи чистий біржовий стек."',
+        author: "INFRASTRUCTURE LEAD // LOCAL-FIRST"
+      },
+      {
+        text: '"Двійкове кешування на рівні байтових потоків LZ4 дає змогу миттєво переглядати гігабайти тікової історії без підвисань інтерфейсу."',
+        author: "PERFORMANCE ENGINEER // ORDER FLOW"
+      }
+    ];
+    let quoteIdx = 0;
+    const quoteText = document.getElementById('quote-display');
+    const quoteAuthor = document.getElementById('quote-author-display');
+    const qPrev = document.getElementById('quote-prev');
+    const qNext = document.getElementById('quote-next');
+
+    function updateQuote(idx) {
+      if (!quoteText || !quoteAuthor) return;
+      quoteText.style.opacity = '0';
+      setTimeout(() => {
+        quoteText.textContent = quotes[idx].text;
+        quoteAuthor.textContent = quotes[idx].author;
+        quoteText.style.opacity = '1';
+      }, 200);
+    }
+
+    if (qPrev && qNext) {
+      qPrev.addEventListener('click', () => {
+        quoteIdx = (quoteIdx - 1 + quotes.length) % quotes.length;
+        updateQuote(quoteIdx);
+      });
+      qNext.addEventListener('click', () => {
+        quoteIdx = (quoteIdx + 1) % quotes.length;
+        updateQuote(quoteIdx);
+      });
+    }
+
+    // 5. SPECS ACCORDION
+    document.querySelectorAll('.spec-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const item = btn.closest('.spec-item');
+        const isOpen = item.getAttribute('data-open') === 'true';
+        document.querySelectorAll('.spec-item').forEach(i => {
+          i.setAttribute('data-open', 'false');
+          i.querySelector('.spec-btn').setAttribute('aria-expanded', 'false');
+        });
+        if (!isOpen) {
+          item.setAttribute('data-open', 'true');
+          btn.setAttribute('aria-expanded', 'true');
+        }
+      });
+    });
+
+    // 6. FAQ ACCORDION
+    document.querySelectorAll('.faq-button').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const item = btn.closest('.faq-item');
+        const isOpen = item.getAttribute('data-open') === 'true';
+        document.querySelectorAll('.faq-item').forEach(i => {
+          i.setAttribute('data-open', 'false');
+          i.querySelector('.faq-button').setAttribute('aria-expanded', 'false');
+        });
+        if (!isOpen) {
+          item.setAttribute('data-open', 'true');
+          btn.setAttribute('aria-expanded', 'true');
+        }
+      });
+    });
+
+    // 7. COOKIE CONSENT
+    const cookieBanner = document.getElementById('cookie-banner');
+    const cookieAccept = document.getElementById('cookie-accept');
+    const cookieReject = document.getElementById('cookie-reject');
+
+    if (cookieBanner && !localStorage.getItem('hawk_cookie_consent')) {
+      setTimeout(() => {
+        cookieBanner.classList.add('active');
+      }, 1200);
+    }
+
+    function setConsent(val) {
+      localStorage.setItem('hawk_cookie_consent', val);
+      if (cookieBanner) cookieBanner.classList.remove('active');
+    }
+
+    if (cookieAccept) cookieAccept.addEventListener('click', () => setConsent('all'));
+    if (cookieReject) cookieReject.addEventListener('click', () => setConsent('necessary'));
+  </script>
+</body>
+</html>
