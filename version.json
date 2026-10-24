@@ -1,0 +1,15 @@
+{
+  "version": "0.9.7",
+  "release_date": "2026-10-24",
+  "changelog": [
+    "Integrated in-app background auto-updater with SHA-256 verification and atomic restart",
+    "Restored stable CPU canvas heatmap renderer and calibrated viewport drag-zoom sensitivity",
+    "Calendar-aligned weekly and monthly candle aggregations with high-timeframe backfill fixes",
+    "Isolated custom chart drawings and templates per workspace layout",
+    "Upgraded TLS 1.3 / tokio-rustls security stack with updated certificate roots",
+    "Default quote currency volume display and improved stream price step precision"
+  ],
+  "download_url": "https://github.com/Breeze141all/hawk-terminal/releases/download/v0.9.7/hawk-terminal-x86_64-setup.exe",
+  "direct_site_url": "https://breeze141all.github.io/hawk-site/hawk-terminal-setup.exe",
+  "sha256": "b0828143c383573a8c61aff2e4bc8305099c95332177cecc68e78f14c4e0e92e"
+}
