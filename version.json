@@ -1,15 +1,15 @@
 {
-  "version": "0.9.7",
-  "release_date": "2026-10-24",
+  "version": "0.9.8",
+  "release_date": "2026-10-25",
   "changelog": [
-    "Integrated in-app background auto-updater with SHA-256 verification and atomic restart",
-    "Restored stable CPU canvas heatmap renderer and calibrated viewport drag-zoom sensitivity",
-    "Calendar-aligned weekly and monthly candle aggregations with high-timeframe backfill fixes",
-    "Isolated custom chart drawings and templates per workspace layout",
-    "Upgraded TLS 1.3 / tokio-rustls security stack with updated certificate roots",
-    "Default quote currency volume display and improved stream price step precision"
+    "Order Book Depth Imbalance indicator with configurable TWAP smoothing and crossed book protection",
+    "Cumulative Volume Delta (CVD) Divergence indicator tracking absorption and regime shifts",
+    "Interactive Drawing Settings modal for instant stroke, color, and line style customization",
+    "Drawing tool micro-adjustments with keyboard nudge support and hotkey controls",
+    "Canonical Base currency storage invariant enforcement preventing historical cache corruption",
+    "Automated legacy directory migration preserving user profiles and trade journals"
   ],
-  "download_url": "https://github.com/Breeze141all/hawk-terminal/releases/download/v0.9.7/hawk-terminal-x86_64-setup.exe",
+  "download_url": "https://github.com/Breeze141all/hawk-terminal/releases/download/v0.9.8/hawk-terminal-x86_64-setup.exe",
   "direct_site_url": "https://breeze141all.github.io/hawk-site/hawk-terminal-setup.exe",
-  "sha256": "b0828143c383573a8c61aff2e4bc8305099c95332177cecc68e78f14c4e0e92e"
+  "sha256": "d10c59c8d21863a44d5cc839b5cdf47947cd21f980567797fb94383ca6e366d4"
 }
