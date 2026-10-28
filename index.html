@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="description" content="hawk-terminal — sovereign, native desktop charting and order flow intelligence platform for crypto markets by breeze141all.">
+<meta name="description" content="hawk-terminal — native desktop charting and order flow platform for crypto markets, a GPL-3.0 fork of flowsurface maintained by breeze141all.">
 <title>hawk-terminal — native crypto order flow & market profile</title>
 <link rel="canonical" href="https://breeze141all.github.io/hawk-site/">
 <link rel="icon" href='data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32"><g stroke="%23E4562C" stroke-width="3.5" stroke-linecap="round"><path d="M16 5v22M6.6 10.5l18.8 11M25.4 10.5l-18.8 11"/></g></svg>'>
@@ -331,13 +331,13 @@
 
   <!-- HERO -->
   <section class="hero">
-    <div class="kicker">open source · by <a href="https://github.com/Breeze141all" target="_blank" rel="noopener">breeze141all</a> · free sovereign software</div>
+    <div class="kicker">open source · by <a href="https://github.com/Breeze141all" target="_blank" rel="noopener">breeze141all</a> · free GPL-3.0 software · fork of <a href="https://github.com/flowsurface-rs/flowsurface" target="_blank" rel="noopener">flowsurface</a></div>
     <h1>
       <span>sees farther,</span>
       <span class="it">strikes sharper</span>
       <span>and weighs <span class="it">less.</span></span>
     </h1>
-    <p class="lead"><b>hawk-terminal</b> is a native desktop order flow intelligence and charting platform for crypto markets. Built in bare-metal Rust with WGPU: zero Electron, zero garbage collection pauses, zero telemetry. Direct exchange WebSocket streams only.</p>
+    <p class="lead"><b>hawk-terminal</b> is a native desktop order flow intelligence and charting platform for crypto markets. Built in Rust on <a href="https://github.com/iced-rs/iced" target="_blank" rel="noopener">Iced</a> and WGPU on top of <a href="https://github.com/flowsurface-rs/flowsurface" target="_blank" rel="noopener">flowsurface</a> by akenshaw: no Electron, no garbage collector, no telemetry. Market data comes straight from the exchanges' own WebSocket and REST APIs.</p>
     
     <div class="hero-cta">
       <a class="pill primary" href="hawk-terminal-setup.exe" download="hawk-terminal-setup.exe">
@@ -371,7 +371,7 @@
     </div>
     <div class="showcase-caption">
       <span><b>Workspace preview:</b> Footprint volume delta clusters, real-time depth ladder, and multi-period profile.</span>
-      <span>Bare-metal Rust • WGPU Hardware Accelerated</span>
+      <span>Native Rust • GPU rendering via WGPU</span>
     </div>
   </section>
 
@@ -395,18 +395,18 @@
   <section class="sec" id="features">
     <div class="sec-label reveal">* core intelligence</div>
     <h2 class="reveal">tools built for <span class="it">execution</span>, not decorations.</h2>
-    <p class="sub reveal">replaces heavy commercial platforms with zero-latency native rendering.</p>
+    <p class="sub reveal">a lightweight native alternative to heavy commercial platforms.</p>
 
     <div class="features-grid">
       <div class="feat reveal">
         <div class="feat-num">01 / ORDER FLOW</div>
         <h3>Footprint & CVD</h3>
-        <p>Tick-level cluster analysis, volume profile, bid/ask delta imbalance, and cumulative volume delta calculated locally in microsecond loops.</p>
+        <p>Tick-level cluster analysis, volume profile, bid/ask delta imbalance, and cumulative volume delta calculated locally from the raw trade stream.</p>
       </div>
       <div class="feat reveal">
         <div class="feat-num">02 / LIQUIDATIONS</div>
         <h3>2D Liquidation Heatmap</h3>
-        <p>Real-time mathematical estimation of leverage liquidation bands (10x to 100x) directly from raw trade flows and open interest dynamics.</p>
+        <p>Model-based estimate of where positions opened on each candle at 5x to 100x leverage would be liquidated, weighted by that candle's trade volume. It shows likely zones, not a feed of real exchange liquidations.</p>
       </div>
       <div class="feat reveal">
         <div class="feat-num">03 / AUCTION THEORY</div>
@@ -434,7 +434,7 @@
   <!-- EXCHANGES -->
   <section class="sec" id="exchanges">
     <div class="sec-label reveal">* supported venues</div>
-    <h2 class="reveal">direct sovereign <span class="it">connectors</span>.</h2>
+    <h2 class="reveal">direct exchange <span class="it">connectors</span>.</h2>
     <p class="sub reveal">no cloud proxy in between. your desktop establishes direct TLS/WebSocket sessions to exchange matching engines. <b>registering via these links supports ongoing open-source development:</b></p>
 
     <div class="ex-grid">
@@ -497,7 +497,7 @@
     <div class="support">
       <div class="reveal">
         <div class="sec-label">* open source support</div>
-        <h2>sovereign <span class="it">backing.</span></h2>
+        <h2>independent <span class="it">backing.</span></h2>
         <p class="sub">hawk-terminal has no VC funding and no paid paywalls. direct donations directly fund testing infrastructure, exchange testnet accounts, and multi-platform CI runners.</p>
         <a class="tg-line" href="https://t.me/Breeze_Trade" target="_blank" rel="noopener">
           join the trader channel
@@ -523,7 +523,7 @@
   <!-- FOOTER -->
   <footer>
     <div class="foot">
-      <span class="f-brand">hawk-terminal<em>*</em> &nbsp;<span style="font-family:var(--mono);font-size:11.5px;color:var(--dim)">GPL-3.0 · © 2025 breeze141all</span></span>
+      <span class="f-brand">hawk-terminal<em>*</em> &nbsp;<span style="font-family:var(--mono);font-size:11.5px;color:var(--dim)">GPL-3.0 · based on <a href="https://github.com/flowsurface-rs/flowsurface" target="_blank" rel="noopener">flowsurface</a> by akenshaw · changes © 2025–2026 breeze141all</span></span>
       <div class="f-links">
         <a href="https://github.com/Breeze141all/hawk-terminal" target="_blank" rel="noopener">github</a>
         <a href="https://github.com/Breeze141all/hawk-terminal/releases" target="_blank" rel="noopener">releases</a>
