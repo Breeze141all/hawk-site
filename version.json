@@ -10,6 +10,6 @@
     "Automated legacy directory migration preserving user profiles and trade journals"
   ],
   "download_url": "https://github.com/Breeze141all/hawk-terminal/releases/download/v0.9.8/hawk-terminal-x86_64-setup.exe",
-  "direct_site_url": "https://breeze141all.github.io/hawk-site/hawk-terminal-setup.exe",
+  "direct_site_url": null,
   "sha256": "d10c59c8d21863a44d5cc839b5cdf47947cd21f980567797fb94383ca6e366d4"
 }
